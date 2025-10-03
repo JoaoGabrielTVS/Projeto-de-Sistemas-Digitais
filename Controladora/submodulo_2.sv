@@ -9,7 +9,7 @@ module submodulo_2 #(
                     output logic B
                     );
 
-bit [15:0] Tp = 0;
+logic [15:0] Tp;
 enum logic [2:0] {inicial, db, a, b, temp} estado;
 logic reg_a, reg_b;
 
@@ -74,6 +74,10 @@ always_comb begin
             end
             b: begin
                 A = 0;
+                B = reg_b;
+            end
+            temp: begin
+                A = reg_a;
                 B = reg_b;
             end
             default:  begin

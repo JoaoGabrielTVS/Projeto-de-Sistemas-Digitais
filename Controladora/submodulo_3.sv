@@ -1,56 +1,53 @@
-module submodulo_3#(parameter AUTOSHUTDOWN_T = 30000)
-                    (input logic clk,
-                    input logic rst,
-                    input logic infra,
-                    input logic enable,
-                    output logic C
-                    );
+module submodulo_3 #(parameter AUTO_SHUTDOWN_T = 30000)
+(
+    input  logic clk,
+    input  logic rst,
+    input  logic infravermelho,
+    input  logic enable,
+    output logic C
+);
 
-bit [15:0] Tc = 0;
+logic [15:0] Tc;
 enum logic [2:0] {inicial, contando, temp} estado;
 
-always_ff @(posedge rst, posedge clk) 
-    if(rst) begin
-        Tc <= 0;
+always_ff @(posedge clk or posedge rst) begin
+    if (rst) begin
+        Tc     <= 0;
         estado <= inicial;
     end
-    else 
+    else begin
         case (estado)
             inicial: begin
-                Tc <= 0;                    // Reset timer
-                if (!infra && enable)
+                Tc <= 0;
+                if (!infravermelho && enable)
                     estado <= contando;
             end
             contando: begin
-                if (Tc < AUTOSHUTDOWN_T) begin
+                if (Tc < AUTO_SHUTDOWN_T) begin
                     Tc <= Tc + 1;
                 end
                 else begin
                     Tc <= 0;
-                    if (infra || !enable) begin
+                    if (infravermelho || !enable)
                         estado <= inicial;
-                    end
-                    else begin
+                    else
                         estado <= temp;
-                    end
                 end
             end
-            temp: begin
-                estado <= inicial;
-            end
+            temp: estado <= inicial;
             default: estado <= inicial;
         endcase
+    end
+end
 
 always_comb begin
-    if (rst) begin
-        C = 0;
-    end
+    if (rst) C = 0;
     else begin
         case (estado)
-            inicial: C = 0;
-            contando: C = 0;
-            temp: C = 1;
-            default: C = 0;
+            inicial:   C = 0;
+            contando:  C = 0;
+            temp:      C = 1;
+            default:   C = 0;
         endcase
     end
 end
